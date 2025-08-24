@@ -1,68 +1,211 @@
+/* Estilos generales */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 20px;
-    background-color: #f4f4f4;
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
 }
+
 .container {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
     background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
 h1 {
     color: #2c3e50;
     text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 15px;
 }
+
+h2 {
+    color: #2c3e50;
+    font-size: 1.8em;
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+h3 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+/* Estilos para el input de archivo */
 #input-pdf {
-    margin: 20px 0;
     display: block;
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-#resultado {
-    margin-top: 20px;
-    padding: 15px;
-    background: #e8f4fc;
-    border-left: 4px solid #2196F3;
+    padding: 12px;
+    margin: 20px 0;
+    border: 2px dashed #3498db;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-/* Estilos para el análisis */
+#input-pdf:hover {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+}
+
+/* Estilos para las secciones de resultados */
 .seccion {
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 5px;
-    border-left: 3px solid #3498db;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
 }
 
-.seccion h3 {
-    margin-top: 0;
+.seccion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.seccion p {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.seccion p strong {
     color: #2c3e50;
+    margin-right: 8px;
+    font-weight: 600;
 }
 
+.seccion ul {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.seccion li {
+    margin-bottom: 10px;
+    line-height: 1.5;
+    position: relative;
+    padding-left: 5px;
+}
+
+.seccion li::before {
+    content: "•";
+    color: #3498db;
+    font-weight: bold;
+    position: absolute;
+    left: -15px;
+}
+
+/* Estilos especiales para la sección de carátula */
+.seccion:nth-child(1) {
+    background-color: #e3f2fd;
+    border-left-color: #2196f3;
+}
+
+/* Estilos especiales para la sección de resolución */
+.seccion:nth-child(2) {
+    background-color: #e8f5e9;
+    border-left-color: #4caf50;
+}
+
+/* Estilos para las palabras clave (tags) */
 .tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 .tag {
     background: #3498db;
     color: white;
-    padding: 4px 10px;
-    border-radius: 15px;
+    padding: 8px 15px;
+    border-radius: 20px;
     font-size: 0.9em;
+    font-weight: 500;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
 
-.seccion ul {
-    padding-left: 20px;
+.tag:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.seccion li {
-    margin-bottom: 5px;
+/* Estilos para el mensaje de carga */
+#resultado p {
+    text-align: center;
+    padding: 15px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+    border-radius: 4px;
+    margin: 20px 0;
+}
+
+/* Estilos para mensajes de error */
+#resultado p[style*="color: red"] {
+    background: #f8d7da;
+    border-left-color: #dc3545;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 20px 0;
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    h1 {
+        font-size: 1.8em;
+    }
+    
+    .seccion {
+        padding: 15px;
+    }
+    
+    .tags {
+        gap: 8px;
+    }
+    
+    .tag {
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+}
+
+/* Animación para los resultados */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.seccion {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Estilo para la resolución destacada */
+.seccion:nth-child(2) p {
+    font-style: italic;
+    background: rgba(76, 175, 80, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 3px solid #4caf50;
 }

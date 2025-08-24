@@ -1,4 +1,10 @@
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('load', () => {
+    if (typeof pdfjsLib === 'undefined') {
+        document.getElementById('resultado').innerHTML = 
+            '<p style="color: red;">Error: PDF.js no se cargó correctamente. Recarga la página.</p>';
+        return;
+    }
+
     const inputPdf = document.getElementById('input-pdf');
     const resultadoDiv = document.getElementById('resultado');
 
@@ -20,84 +26,179 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Función para extraer texto del PDF (igual que antes)
 async function extraerTextoPDF(archivo) {
     const url = URL.createObjectURL(archivo);
-    const pdf = await pdfjsLib.getDocument(url).promise;
-    let textoCompleto = '';
     
-    for (let i = 1; i <= pdf.numPages; i++) {
-        const pagina = await pdf.getPage(i);
-        const contenido = await pagina.getTextContent();
-        const textoPagina = contenido.items.map(item => item.str).join(' ');
-        textoCompleto += textoPagina + '\n';
+    try {
+        const pdf = await pdfjsLib.getDocument(url).promise;
+        let textoCompleto = '';
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const pagina = await pdf.getPage(i);
+            const contenido = await pagina.getTextContent();
+            const textoPagina = contenido.items
+                .map(item => item.str)
+                .join(' ');
+            textoCompleto += textoPagina + '\n';
+        }
+        
+        return textoCompleto;
+    } finally {
+        URL.revokeObjectURL(url);
     }
-    
-    URL.revokeObjectURL(url);
-    return textoCompleto;
 }
 
-// Función para analizar la sentencia con JavaScript puro
 function analizarSentencia(texto) {
     const resultado = {
+        caratula: extraerCaratula(texto),
         partes: extraerPartes(texto),
         articulos: extraerArticulos(texto),
         fechas: extraerFechas(texto),
         montos: extraerMontos(texto),
-        palabrasClave: extraerPalabrasClave(texto)
+        palabrasClave: extraerPalabrasClave(texto),
+        resolucion: extraerResolucion(texto)
     };
     
     return resultado;
 }
 
-// Funciones de extracción usando expresiones regulares
+// Nueva función para extraer la carátula completa
+function extraerCaratula(texto) {
+    // Buscar el patrón de carátula: actor c/ demandado s/ objeto
+    const caratulaRegex = /([A-Z][a-záéíóúñ\s]+?)\s+c\/\s+([A-Z][a-záéíóúñ\s]+?)\s+s\/\s+(.+)/i;
+    const match = caratulaRegex.exec(texto);
+    
+    if (match) {
+        return {
+            actor: match[1].trim(),
+            demandado: match[2].trim(),
+            objeto: match[3].trim()
+        };
+    }
+    
+    return null;
+}
+
+// Función mejorada para extraer partes
 function extraerPartes(texto) {
     const partes = [];
     
-    // Buscar patrones como "Demandante: Nombre" o "Actor: Nombre"
-    const demandanteRegex = /(demandante|actor|actora|querellante):\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/gi;
+    // 1. Extraer de la carátula
+    const caratula = extraerCaratula(texto);
+    if (caratula) {
+        partes.push({ tipo: 'actor', nombre: caratula.actor });
+        partes.push({ tipo: 'demandado', nombre: caratula.demandado });
+    }
+    
+    // 2. Buscar después de "RESUELVO:"
+    const resuelvoRegex = /RESUELVO:\s*(?:hacer lugar a la demanda|rechazar la demanda)\s+intentada\s+por\s+([A-Z][a-záéíóúñ\s]+?)\s+contra\s+([A-Z][a-záéíóúñ\s]+?)(?:\.|,|\s|$)/gi;
     let match;
-    while ((match = demandanteRegex.exec(texto)) !== null) {
-        partes.push({ tipo: match[1], nombre: match[2] });
+    
+    while ((match = resuelvoRegex.exec(texto)) !== null) {
+        // Evitar duplicados
+        if (!partes.some(p => p.tipo === 'actor' && p.nombre === match[1].trim())) {
+            partes.push({ tipo: 'actor', nombre: match[1].trim() });
+        }
+        
+        if (!partes.some(p => p.tipo === 'demandado' && p.nombre === match[2].trim())) {
+            partes.push({ tipo: 'demandado', nombre: match[2].trim() });
+        }
     }
     
-    // Buscar patrones como "Demandado: Nombre" o "Demandada: Nombre"
-    const demandadoRegex = /(demandado|demandada|acusado|acusada):\s*([A-Z][a-z]+\s+[A-Z][a-z]+)/gi;
-    while ((match = demandadoRegex.exec(texto)) !== null) {
-        partes.push({ tipo: match[1], nombre: match[2] });
+    // 3. Otros patrones comunes
+    const otrosPatrones = [
+        /(demandante|actor|actora|querellante|accionante|solicitante):\s*([A-Z][a-záéíóúñ\s]+?)(?=\s*(?:,|\n|demandado|demandada|acusado|acusada|en\s+contra|vs\.|contra|$))/gi,
+        /(demandado|demandada|acusado|acusada|demandados|demandadas):\s*([A-Z][a-záéíóúñ\s]+?)(?=\s*(?:,|\n|demandante|actor|actora|querellante|solicitante|$))/gi
+    ];
+    
+    otrosPatrones.forEach(regex => {
+        while ((match = regex.exec(texto)) !== null) {
+            let tipo = match[1].toLowerCase();
+            let nombre = match[2].trim().replace(/\s+/g, ' ');
+            
+            // Evitar duplicados
+            if (!partes.some(p => p.tipo === tipo && p.nombre === nombre)) {
+                partes.push({ tipo: tipo, nombre: nombre });
+            }
+        }
+    });
+    
+    // Limitar a 5 resultados
+    return partes.slice(0, 5);
+}
+
+// Nueva función para extraer la resolución
+function extraerResolucion(texto) {
+    // Buscar después de "RESUELVO:"
+    const resuelvoRegex = /RESUELVO:\s*(.+?)(?:\n\n|\n[A-Z]|$)/i;
+    const match = resuelvoRegex.exec(texto);
+    
+    if (match) {
+        return match[1].trim();
     }
     
-    return partes.slice(0, 5); // Limitar a 5 resultados
+    return null;
 }
 
 function extraerArticulos(texto) {
     const articulos = [];
-    const articuloRegex = /(?:artículo|art\.|arts\.)\s*(\d+(?:\.\d+)?(?:\s*(?:bis|ter|quater))?)/gi;
+    const articuloRegex = /(?:artículo|art\.|arts\.)\s*(\d+(?:\.\d+)?(?:\s*(?:bis|ter|quater|quáter|quinquies|sexies|septies|octies|nonies))?)/gi;
     let match;
+    
     while ((match = articuloRegex.exec(texto)) !== null) {
-        articulos.push(match[0]);
+        let articulo = match[0].toLowerCase().replace(/artículo/, 'art.').trim();
+        articulos.push(articulo);
     }
-    return [...new Set(articulos)].slice(0, 10); // Eliminar duplicados y limitar
+    
+    return [...new Set(articulos)].sort().slice(0, 10);
 }
 
 function extraerFechas(texto) {
     const fechas = [];
     const fechaRegex = /(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+(\d{4})/gi;
+    const fechaRegex2 = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/g;
+    
     let match;
     while ((match = fechaRegex.exec(texto)) !== null) {
         fechas.push(match[0]);
     }
-    return [...new Set(fechas)].slice(0, 5); // Eliminar duplicados y limitar
+    
+    while ((match = fechaRegex2.exec(texto)) !== null) {
+        const dia = match[1].padStart(2, '0');
+        const mes = match[2].padStart(2, '0');
+        const año = match[3].length === 2 ? '20' + match[3] : match[3];
+        fechas.push(`${dia}/${mes}/${año}`);
+    }
+    
+    return [...new Set(fechas)].slice(0, 5);
 }
 
 function extraerMontos(texto) {
     const montos = [];
-    const montoRegex = /\$([\d,]+(?:\.\d{2})?)\s*(?:pesos|mxn|ars|clp)/gi;
+    const montoRegex = /\$?\s?(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)\s*(?:pesos|mxn|ars|clp|u\$s|usd|eur)?/gi;
+    
     let match;
     while ((match = montoRegex.exec(texto)) !== null) {
-        montos.push(match[0]);
+        let monto = match[0].trim();
+        
+        if (!monto.startsWith('$')) {
+            monto = '$' + monto;
+        }
+        
+        if (!monto.toLowerCase().includes('pesos') && 
+            !monto.toLowerCase().includes('mxn') && 
+            !monto.toLowerCase().includes('ars') && 
+            !monto.toLowerCase().includes('clp') &&
+            !monto.toLowerCase().includes('u$s') &&
+            !monto.toLowerCase().includes('usd') &&
+            !monto.toLowerCase().includes('eur')) {
+            monto += ' pesos';
+        }
+        
+        montos.push(monto);
     }
-    return [...new Set(montos)].slice(0, 5); // Eliminar duplicados y limitar
+    
+    return [...new Set(montos)].slice(0, 5);
 }
 
 function extraerPalabrasClave(texto) {
@@ -105,7 +206,10 @@ function extraerPalabrasClave(texto) {
     const terminosJuridicos = [
         'indemnización', 'daño moral', 'despido injustificado', 'cuota alimentaria',
         'responsabilidad civil', 'contrato', 'incumplimiento', 'nulidad',
-        'prescripción', 'jurisprudencia', 'recurso', 'apelación'
+        'prescripción', 'jurisprudencia', 'recurso', 'apelación',
+        'daños y perjuicios', 'accidente de trabajo', 'enfermedad profesional',
+        'despido', 'renuncia', 'finiquito', 'salario', 'jubilación',
+        'hacer lugar', 'rechazar demanda'
     ];
     
     terminosJuridicos.forEach(termino => {
@@ -118,13 +222,36 @@ function extraerPalabrasClave(texto) {
     return palabrasClave.slice(0, 8);
 }
 
-// Función para mostrar los resultados
 function mostrarResultadoAnalisis(analisis) {
     const resultadoDiv = document.getElementById('resultado');
     
     let html = `
         <h2>Resultados del Análisis</h2>
-        
+    `;
+    
+    // Mostrar carátula si se detectó
+    if (analisis.caratula) {
+        html += `
+            <div class="seccion">
+                <h3>Carátula</h3>
+                <p><strong>Actor:</strong> ${analisis.caratula.actor}</p>
+                <p><strong>Demandado:</strong> ${analisis.caratula.demandado}</p>
+                <p><strong>Objeto:</strong> ${analisis.caratula.objeto}</p>
+            </div>
+        `;
+    }
+    
+    // Mostrar resolución si se detectó
+    if (analisis.resolucion) {
+        html += `
+            <div class="seccion">
+                <h3>Resolución</h3>
+                <p>${analisis.resolucion}</p>
+            </div>
+        `;
+    }
+    
+    html += `
         <div class="seccion">
             <h3>Partes Involucradas</h3>
             <ul>
@@ -156,7 +283,7 @@ function mostrarResultadoAnalisis(analisis) {
         <div class="seccion">
             <h3>Palabras Clave Jurídicas</h3>
             <div class="tags">
-                ${analisis.palabrasClave.map(p => `<span class="tag">${p}</span>`).join('') || '<p>No se detectaron palabras clave</p>'}
+                ${analisis.palabrasClave.map(p => `<span class="tag">${p}</span>`).join('')}
             </div>
         </div>
     `;
