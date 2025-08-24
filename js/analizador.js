@@ -19,7 +19,7 @@ window.addEventListener('load', () => {
             resultadoDiv.innerHTML = '<p>Analizando texto...</p>';
             const analisis = analizarSentencia(texto);
             
-            mostrarResultadoAnalisis(analisis);
+            mostrarResultadoAnalisis(analisis, texto); // Pasamos el texto para depuración
         } catch (error) {
             resultadoDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
         }
@@ -244,11 +244,17 @@ function extraerPalabrasClave(texto) {
     return palabrasClave.slice(0, 8);
 }
 
-function mostrarResultadoAnalisis(analisis) {
+function mostrarResultadoAnalisis(analisis, texto) {
     const resultadoDiv = document.getElementById('resultado');
     
     let html = `
         <h2>Resultados del Análisis</h2>
+        
+        <!-- Sección de depuración -->
+        <div class="seccion depuracion">
+            <h3>Depuración - Primeras 500 caracteres del texto extraído</h3>
+            <pre>${texto.substring(0, 500)}...</pre>
+        </div>
     `;
     
     // Mostrar carátula si se detectó
@@ -305,7 +311,7 @@ function mostrarResultadoAnalisis(analisis) {
         <div class="seccion">
             <h3>Palabras Clave Jurídicas</h3>
             <div class="tags">
-                ${analisis.palabrasClave.map(p => `<span class="tag">${p}</span>`).join('')}
+                ${analisis.palabrasClave.map(p => `<span class="tag">${p}</span>`).join(' ')}
             </div>
         </div>
     `;
