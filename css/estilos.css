@@ -307,3 +307,50 @@ h3 {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
+/* Mejorar la presentación de artículos con abreviaturas */
+.seccion:nth-child(4) ul li {
+    background: rgba(52, 152, 219, 0.05);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border-left: 3px solid #3498db;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    position: relative;
+}
+
+.seccion:nth-child(4) ul li::before {
+    content: "📜";
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    color: #3498db;
+}
+
+/* Mejorar la presentación de montos */
+.seccion:nth-child(6) ul li {
+    background: rgba(46, 204, 113, 0.1);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border-left: 3px solid #2ecc71;
+    font-weight: 500;
+    position: relative;
+}
+
+.seccion:nth-child(6) ul li::before {
+    content: "💰";
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    color: #2ecc71;
+}
+
+/* Resaltar el objeto recortado */
+.caratula p:last-child {
+    background: rgba(241, 196, 15, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 3px solid #f1c40f;
+    font-weight: 500;
+}
