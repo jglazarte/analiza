@@ -62,18 +62,25 @@ function analizarSentencia(texto) {
     return resultado;
 }
 
-// Nueva función para extraer la carátula completa
+// Función mejorada para extraer la carátula completa
 function extraerCaratula(texto) {
     // Buscar el patrón de carátula: actor c/ demandado s/ objeto
-    const caratulaRegex = /([A-Z][a-záéíóúñ\s]+?)\s+c\/\s+([A-Z][a-záéíóúñ\s]+?)\s+s\/\s+(.+)/i;
-    const match = caratulaRegex.exec(texto);
+    // Patrones más flexibles para diferentes formatos
+    const patronesCaratula = [
+        /([A-Z][a-záéíóúñ\s]+?)\s*[cC]\/*\s*([A-Z][a-záéíóúñ\s]+?)\s*[sS]\/*\s*(.+?)(?:\n|$)/i,
+        /([A-Z][a-záéíóúñ\s]+?)\s+[cC]\s+([A-Z][a-záéíóúñ\s]+?)\s+[sS]\s+(.+?)(?:\n|$)/i,
+        /([A-Z][a-záéíóúñ\s]+?)\s+contra\s+([A-Z][a-záéíóúñ\s]+?)\s+s\/\s*(.+?)(?:\n|$)/i
+    ];
     
-    if (match) {
-        return {
-            actor: match[1].trim(),
-            demandado: match[2].trim(),
-            objeto: match[3].trim()
-        };
+    for (const patron of patronesCaratula) {
+        const match = patron.exec(texto);
+        if (match) {
+            return {
+                actor: match[1].trim(),
+                demandado: match[2].trim(),
+                objeto: match[3].trim()
+            };
+        }
     }
     
     return null;
@@ -127,7 +134,35 @@ function extraerPartes(texto) {
     return partes.slice(0, 5);
 }
 
-// Nueva función para extraer la resolución
+// Función mejorada para extraer artículos con cuerpo normativo
+function extraerArticulos(texto) {
+    const articulos = [];
+    
+    // Patrón para capturar artículo + cuerpo normativo
+    const articuloCompletoRegex = /(?:artículo|art\.|arts\.)\s*(\d+(?:\.\d+)?(?:\s*(?:bis|ter|quater|quáter|quinquies|sexies|septies|octies|nonies))?)\s*(?:de\s+la\s+|de\s+el\s+|de\s+)?([A-Z][a-záéíóúñ\s]+?)(?:\.|,|\s|$)/gi;
+    
+    let match;
+    while ((match = articuloCompletoRegex.exec(texto)) !== null) {
+        let articuloCompleto = match[0].trim();
+        // Normalizar: "artículo" -> "art."
+        articuloCompleto = articuloCompleto.replace(/artículo/gi, 'art.');
+        articulos.push(articuloCompleto);
+    }
+    
+    // Si no se encontraron artículos completos, usar el patrón simple
+    if (articulos.length === 0) {
+        const articuloSimpleRegex = /(?:artículo|art\.|arts\.)\s*(\d+(?:\.\d+)?(?:\s*(?:bis|ter|quater|quáter|quinquies|sexies|septies|octies|nonies))?)/gi;
+        while ((match = articuloSimpleRegex.exec(texto)) !== null) {
+            let articulo = match[0].toLowerCase().replace(/artículo/, 'art.').trim();
+            articulos.push(articulo);
+        }
+    }
+    
+    // Eliminar duplicados y ordenar
+    return [...new Set(articulos)].sort().slice(0, 10);
+}
+
+// Función para extraer la resolución
 function extraerResolucion(texto) {
     // Buscar después de "RESUELVO:"
     const resuelvoRegex = /RESUELVO:\s*(.+?)(?:\n\n|\n[A-Z]|$)/i;
@@ -138,19 +173,6 @@ function extraerResolucion(texto) {
     }
     
     return null;
-}
-
-function extraerArticulos(texto) {
-    const articulos = [];
-    const articuloRegex = /(?:artículo|art\.|arts\.)\s*(\d+(?:\.\d+)?(?:\s*(?:bis|ter|quater|quáter|quinquies|sexies|septies|octies|nonies))?)/gi;
-    let match;
-    
-    while ((match = articuloRegex.exec(texto)) !== null) {
-        let articulo = match[0].toLowerCase().replace(/artículo/, 'art.').trim();
-        articulos.push(articulo);
-    }
-    
-    return [...new Set(articulos)].sort().slice(0, 10);
 }
 
 function extraerFechas(texto) {
@@ -232,7 +254,7 @@ function mostrarResultadoAnalisis(analisis) {
     // Mostrar carátula si se detectó
     if (analisis.caratula) {
         html += `
-            <div class="seccion">
+            <div class="seccion caratula">
                 <h3>Carátula</h3>
                 <p><strong>Actor:</strong> ${analisis.caratula.actor}</p>
                 <p><strong>Demandado:</strong> ${analisis.caratula.demandado}</p>
@@ -244,7 +266,7 @@ function mostrarResultadoAnalisis(analisis) {
     // Mostrar resolución si se detectó
     if (analisis.resolucion) {
         html += `
-            <div class="seccion">
+            <div class="seccion resolucion">
                 <h3>Resolución</h3>
                 <p>${analisis.resolucion}</p>
             </div>

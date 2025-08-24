@@ -209,3 +209,55 @@ h3 {
     border-radius: 4px;
     border-left: 3px solid #4caf50;
 }
+/* Estilos especiales para la sección de carátula */
+.caratula {
+    background-color: #e3f2fd !important;
+    border-left-color: #2196f3 !important;
+}
+
+.caratula p {
+    background: rgba(33, 150, 243, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+.caratula p strong {
+    color: #1976d2;
+    font-weight: 600;
+}
+
+/* Estilos especiales para la sección de resolución */
+.resolucion {
+    background-color: #e8f5e9 !important;
+    border-left-color: #4caf50 !important;
+}
+
+.resolucion p {
+    background: rgba(76, 175, 80, 0.1);
+    padding: 12px;
+    border-radius: 4px;
+    border-left: 3px solid #4caf50;
+    font-style: italic;
+}
+
+/* Mejorar la presentación de artículos */
+.seccion:nth-child(4) ul li {
+    background: rgba(52, 152, 219, 0.05);
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    border-left: 2px solid #3498db;
+}
+
+/* Resaltar palabras clave */
+.tag {
+    background: linear-gradient(135deg, #3498db, #2980b9) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-transform: capitalize;
+}
+
+.tag:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
