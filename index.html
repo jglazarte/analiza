@@ -6,12 +6,11 @@
     <title>Analizador de Sentencias</title>
     <link rel="stylesheet" href="css/estilos.css">
     
-    <!-- PDF.js (AGREGAR ESTAS LÍNEAS AQUÍ) -->
-    <script src="lib/build/pdf.js"></script>
-    <link rel="stylesheet" href="lib/web/viewer.css">
+    <!-- PDF.js desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         // Configurar el worker de PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/build/pdf.worker.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
 </head>
 <body>
@@ -21,6 +20,8 @@
         <input type="file" id="input-pdf" accept=".pdf">
         <div id="resultado"></div>
     </div>
+    
+    <!-- Cargar nuestro script al final -->
     <script src="js/analizador.js"></script>
 </body>
 </html>
