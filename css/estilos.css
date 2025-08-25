@@ -285,3 +285,59 @@ h3 {
 .seccion {
     animation: fadeIn 0.5s ease forwards;
 }
+/* Estilos mejorados para la sección de resolución */
+.resolucion {
+    background-color: #e8f5e9 !important;
+    border-left-color: #4caf50 !important;
+}
+
+.resolucion h3 {
+    color: #2e7d32;
+    border-bottom: 2px solid #4caf50;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.resolucion-texto {
+    background: rgba(76, 175, 80, 0.05);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #c8e6c9;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: 'Georgia', serif;
+    line-height: 1.8;
+    color: #1b5e20;
+}
+
+.resolucion-texto p {
+    margin: 8px 0;
+    text-align: justify;
+    background: none;
+    padding: 0;
+    border: none;
+    border-left: none;
+}
+
+.resolucion-texto p:first-child {
+    text-indent: 20px;
+}
+
+/* Agregar scrollbar personalizado para la resolución */
+.resolucion-texto::-webkit-scrollbar {
+    width: 8px;
+}
+
+.resolucion-texto::-webkit-scrollbar-track {
+    background: #f1f8e9;
+    border-radius: 4px;
+}
+
+.resolucion-texto::-webkit-scrollbar-thumb {
+    background: #81c784;
+    border-radius: 4px;
+}
+
+.resolucion-texto::-webkit-scrollbar-thumb:hover {
+    background: #66bb6a;
+}
