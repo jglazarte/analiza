@@ -108,15 +108,99 @@ h3 {
 }
 
 /* Estilos especiales para la sección de carátula */
-.seccion:nth-child(1) {
-    background-color: #e3f2fd;
-    border-left-color: #2196f3;
+.caratula {
+    background-color: #e3f2fd !important;
+    border-left-color: #2196f3 !important;
+}
+
+.caratula p {
+    background: rgba(33, 150, 243, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+.caratula p:last-child {
+    background: rgba(241, 196, 15, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 3px solid #f1c40f;
+    font-weight: 500;
+}
+
+.caratula p strong {
+    color: #1976d2;
+    font-weight: 600;
 }
 
 /* Estilos especiales para la sección de resolución */
-.seccion:nth-child(2) {
-    background-color: #e8f5e9;
-    border-left-color: #4caf50;
+.resolucion {
+    background-color: #e8f5e9 !important;
+    border-left-color: #4caf50 !important;
+}
+
+.resolucion p {
+    background: rgba(76, 175, 80, 0.1);
+    padding: 12px;
+    border-radius: 4px;
+    border-left: 3px solid #4caf50;
+    font-style: italic;
+}
+
+/* Estilos específicos para la sección de artículos */
+.articulos ul li {
+    background: rgba(52, 152, 219, 0.05);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border-left: 3px solid #3498db;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    position: relative;
+}
+
+.articulos ul li::before {
+    content: "📜";
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    color: #3498db;
+}
+
+/* Estilos específicos para la sección de fechas */
+.fechas ul li {
+    background: rgba(155, 89, 182, 0.1);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border-left: 3px solid #9b59b6;
+    position: relative;
+}
+
+.fechas ul li::before {
+    content: "📅";
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    color: #9b59b6;
+}
+
+/* Estilos específicos para la sección de montos */
+.montos ul li {
+    background: rgba(46, 204, 113, 0.1);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    border-left: 3px solid #2ecc71;
+    position: relative;
+}
+
+.montos ul li::before {
+    content: "💰";
+    position: absolute;
+    left: -10px;
+    top: 12px;
+    color: #2ecc71;
 }
 
 /* Estilos para las palabras clave (tags) */
@@ -137,6 +221,8 @@ h3 {
     display: inline-block;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
+    margin: 5px;
+    text-transform: capitalize;
 }
 
 .tag:hover {
@@ -145,7 +231,7 @@ h3 {
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-/* Estilos para el mensaje de carga */
+/* Estilos para mensajes de carga y error */
 #resultado p {
     text-align: center;
     padding: 15px;
@@ -156,7 +242,6 @@ h3 {
     margin: 20px 0;
 }
 
-/* Estilos para mensajes de error */
 #resultado p[style*="color: red"] {
     background: #f8d7da;
     border-left-color: #dc3545;
@@ -199,158 +284,4 @@ h3 {
 
 .seccion {
     animation: fadeIn 0.5s ease forwards;
-}
-
-/* Estilo para la resolución destacada */
-.seccion:nth-child(2) p {
-    font-style: italic;
-    background: rgba(76, 175, 80, 0.1);
-    padding: 10px;
-    border-radius: 4px;
-    border-left: 3px solid #4caf50;
-}
-/* Estilos especiales para la sección de carátula */
-.caratula {
-    background-color: #e3f2fd !important;
-    border-left-color: #2196f3 !important;
-}
-
-.caratula p {
-    background: rgba(33, 150, 243, 0.1);
-    padding: 10px;
-    border-radius: 4px;
-    margin: 5px 0;
-}
-
-.caratula p strong {
-    color: #1976d2;
-    font-weight: 600;
-}
-
-/* Estilos especiales para la sección de resolución */
-.resolucion {
-    background-color: #e8f5e9 !important;
-    border-left-color: #4caf50 !important;
-}
-
-.resolucion p {
-    background: rgba(76, 175, 80, 0.1);
-    padding: 12px;
-    border-radius: 4px;
-    border-left: 3px solid #4caf50;
-    font-style: italic;
-}
-
-/* Mejorar la presentación de artículos */
-.seccion:nth-child(4) ul li {
-    background: rgba(52, 152, 219, 0.05);
-    padding: 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    border-left: 2px solid #3498db;
-}
-
-/* Resaltar palabras clave */
-.tag {
-    background: linear-gradient(135deg, #3498db, #2980b9) !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    text-transform: capitalize;
-}
-
-.tag:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-/* Estilos para la sección de depuración */
-.depuracion {
-    background-color: #fff8e1 !important;
-    border-left-color: #ffc107 !important;
-    margin-bottom: 30px;
-}
-
-.depuracion pre {
-    background: #f5f5f5;
-    padding: 15px;
-    border-radius: 4px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-}
-
-/* Asegurar que las etiquetas de palabras clave tengan espacios */
-.tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.tag {
-    background: #3498db;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: 500;
-    display: inline-block;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    margin: 5px;
-}
-
-.tag:hover {
-    background: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-/* Mejorar la presentación de artículos con abreviaturas */
-.seccion:nth-child(4) ul li {
-    background: rgba(52, 152, 219, 0.05);
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 12px;
-    border-left: 3px solid #3498db;
-    font-family: 'Courier New', monospace;
-    font-size: 0.95em;
-    position: relative;
-}
-
-.seccion:nth-child(4) ul li::before {
-    content: "📜";
-    position: absolute;
-    left: -10px;
-    top: 12px;
-    color: #3498db;
-}
-
-/* Mejorar la presentación de montos */
-.seccion:nth-child(6) ul li {
-    background: rgba(46, 204, 113, 0.1);
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 12px;
-    border-left: 3px solid #2ecc71;
-    font-weight: 500;
-    position: relative;
-}
-
-.seccion:nth-child(6) ul li::before {
-    content: "💰";
-    position: absolute;
-    left: -10px;
-    top: 12px;
-    color: #2ecc71;
-}
-
-/* Resaltar el objeto recortado */
-.caratula p:last-child {
-    background: rgba(241, 196, 15, 0.1);
-    padding: 10px;
-    border-radius: 4px;
-    border-left: 3px solid #f1c40f;
-    font-weight: 500;
 }
