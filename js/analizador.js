@@ -190,38 +190,79 @@ function extraerArticulos(texto) {
     return [...new Set(articulos)].sort().slice(0, 10);
 }
 
-// Función para extraer la resolución
+// Función mejorada para extraer la parte resolutiva completa
 function extraerResolucion(texto) {
-    const resuelvoRegex = /RESUELVO:\s*(.+?)(?:\n\n|\n[A-Z]|$)/i;
-    const match = resuelvoRegex.exec(texto);
+    console.log("Extrayendo resolución completa");
     
-    if (match) {
-        return match[1].trim();
+    // Patrones para buscar el inicio y fin de la parte resolutiva
+    const inicioPatrones = [
+        /RESUELVO\s*:/gi,
+        /RESUELVO\s*/gi,
+        /RESUELVE\s*:/gi,
+        /RESUELVE\s*/gi
+    ];
+    
+    const finPatrones = [
+        /REGISTRESE\s*/gi,
+        /REGÍSTRESE\s*/gi,
+        /REGISTRESE\s+Y\s+NOTIFÍQUESE/gi,
+        /REGÍSTRESE\s+Y\s+NOTIFÍQUESE/gi,
+        /ANÓTESE\s*/gi,
+        /NOTIFÍQUESE\s*/gi
+    ];
+    
+    let inicioEncontrado = -1;
+    let finEncontrado = -1;
+    let patronInicioUsado = '';
+    let patronFinUsado = '';
+    
+    // Buscar el inicio (RESUELVO)
+    for (const patron of inicioPatrones) {
+        const match = patron.exec(texto);
+        if (match) {
+            inicioEncontrado = match.index;
+            patronInicioUsado = match[0];
+            break;
+        }
     }
     
-    return null;
+    if (inicioEncontrado === -1) {
+        console.log("No se encontró inicio de resolución");
+        return null;
+    }
+    
+    // Buscar el fin (REGISTRESE) después del inicio
+    const textoDespuesDeInicio = texto.substring(inicioEncontrado);
+    
+    for (const patron of finPatrones) {
+        const match = patron.exec(textoDespuesDeInicio);
+        if (match) {
+            finEncontrado = inicioEncontrado + match.index;
+            patronFinUsado = match[0];
+            break;
+        }
+    }
+    
+    if (finEncontrado === -1) {
+        console.log("No se encontró fin de resolución, usando todo el texto restante");
+        // Si no se encuentra el fin, tomar hasta el final del documento o hasta una sección clara
+        const proximaSeccion = textoDespuesDeInicio.search(/\n\n[A-Z][A-Z\s]+\n/);
+        if (proximaSeccion !== -1) {
+            finEncontrado = inicioEncontrado + proximaSeccion;
+        } else {
+            finEncontrado = texto.length;
+        }
+    }
+    
+    // Extraer el texto resolutivo
+    let textoResolutivo = texto.substring(inicioEncontrado, finEncontrado).trim();
+    
+    // Limpiar el texto: quitar el "RESUELVO:" inicial y espacios extra
+    textoResolutivo = textoResolutivo.replace(new RegExp("^" + patronInicioUsado, 'gi'), '').trim();
+    
+    console.log("Resolución extraída, longitud:", textoResolutivo.length);
+    return textoResolutivo;
 }
-
-function extraerFechas(texto) {
-    const fechas = [];
-    const fechaRegex = /(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+(\d{4})/gi;
-    const fechaRegex2 = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/g;
-    
-    let match;
-    while ((match = fechaRegex.exec(texto)) !== null) {
-        fechas.push(match[0]);
-    }
-    
-    while ((match = fechaRegex2.exec(texto)) !== null) {
-        const dia = match[1].padStart(2, '0');
-        const mes = match[2].padStart(2, '0');
-        const año = match[3].length === 2 ? '20' + match[3] : match[3];
-        fechas.push(`${dia}/${mes}/${año}`);
-    }
-    
-    return [...new Set(fechas)].slice(0, 5);
-}
-
 // Función mejorada para extraer montos
 function extraerMontos(texto) {
     const montos = [];
@@ -305,21 +346,15 @@ function extraerPalabrasClave(texto) {
     return palabrasClave.slice(0, 8);
 }
 
-function mostrarResultadoAnalisis(analisis) {
-    const resultadoDiv = document.getElementById('resultado');
-    
-    let html = `
-        <h2>Resultados del Análisis</h2>
-    `;
-    
-    // Mostrar carátula si se detectó
-    if (analisis.caratula) {
+// Reemplazar la sección de resolución en mostrarResultadoAnalisis
+    // Mostrar resolución si se detectó
+    if (analisis.resolucion) {
         html += `
-            <div class="seccion caratula">
-                <h3>Carátula</h3>
-                <p><strong>Actor:</strong> ${analisis.caratula.actor}</p>
-                <p><strong>Demandado:</strong> ${analisis.caratula.demandado}</p>
-                <p><strong>Objeto:</strong> ${analisis.caratula.objeto}</p>
+            <div class="seccion resolucion">
+                <h3>Parte Resolutiva Completa</h3>
+                <div class="resolucion-texto">
+                    ${analisis.resolucion.split('\n').map(linea => `<p>${linea}</p>`).join('')}
+                </div>
             </div>
         `;
     }
