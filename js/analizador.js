@@ -62,7 +62,7 @@ function analizarSentencia(texto) {
     return resultado;
 }
 
-// Función mejorada para extraer la carátula completa - recortar objeto en comillas, fecha, N° o número
+// Función mejorada para extraer la carátula completa - recortar objeto en indicadores específicos
 function extraerCaratula(texto) {
     const patronesCaratula = [
         /([A-Z][a-záéíóúñ\s]+?)\s*[cC]\/*\s*([A-Z][a-záéíóúñ\s]+?)\s*[sS]\/*\s*(.+?)(?:\n|$)/i,
@@ -75,25 +75,60 @@ function extraerCaratula(texto) {
         if (match) {
             let objeto = match[3].trim();
             
-            // Recortar el objeto en comillas, "Fecha del Escrito", "N°" o cualquier número
-            const recortes = [
-                /"/, // Comillas
-                /Fecha del Escrito/i,
-                /N°/i,
-                /Nº/i,
-                /Nro\./i,
-                /\d+\/\d+\/\d+/, // Fecha DD/MM/AAAA
-                /\d+\s+de\s+[a-z]+\s+de\s+\d{4}/i, // Fecha "día de mes de año"
+            // Lista de indicadores de fin para el objeto
+            const indicadoresFin = [
+                // Textos específicos
+                /Fecha\s+inicio/i,
+                /N[º°]\s+de\s+Receptoría/i,
+                /N[º°]\s+de\s+Expediente/i,
+                /Estado/i,
+                /Despacho/i,
+                /Pasos\s+procesales/i,
+                /Trámite/i,
+                /SENTENCIA\s+DEFINITIVA/i,
+                /FIRMADO/i,
+                /Anterior/i,
+                /Siguiente/i,
+                /Referencias/i,
+                /Funcionario\s+Firmante/i,
+                /Nro\.\s+Folio\s+Sentencia/i,
+                /NRO\.\s+FOLIO\s+SENTENCIA/i,
+                /Nro\.\s+Registro\s+Sentencia/i,
+                /NRO\.\s+REGISTRO\s+SENTENCIA/i,
+                /Texto\s+del\s+Proveído/i,
+                /Para\s+copiar\s+y\s+pegar/i,
+                /NÚMERO\s+REGISTRO/i,
+                /REGULACIÓN\s+HONORARIOS/i,
+                /FOLIO\s+DE\s+REGULACIÓN/i,
+                // Fechas
+                /\d{1,2}\/\d{1,2}\/\d{4}/, // DD/MM/AAAA
+                /\d{1,2}\s+de\s+[a-z]+\s+de\s+\d{4}/i, // "día de mes de año"
                 /\d{4}/, // Año solo
-                /\d+/ // Cualquier número
+                // Números solos
+                /\b\d+\b/, // Cualquier número
+                // Patrones de hora
+                /\d{1,2}:\d{2}:\d{2}/, // HH:MM:SS
+                /\d{1,2}:\d{2}/, // HH:MM
             ];
             
-            for (const recorte of recortes) {
-                const posicion = objeto.search(recorte);
+            // Buscar el primer indicador de fin
+            let posicionFin = -1;
+            let indicadorEncontrado = '';
+            
+            for (const indicador of indicadoresFin) {
+                const posicion = objeto.search(indicador);
                 if (posicion !== -1) {
-                    objeto = objeto.substring(0, posicion).trim();
+                    posicionFin = posicion;
+                    indicadorEncontrado = indicador.toString();
                     break;
                 }
+            }
+            
+            // Si se encontró un indicador de fin, recortar el objeto
+            if (posicionFin !== -1) {
+                objeto = objeto.substring(0, posicionFin).trim();
+                // Eliminar palabras incompletas al final
+                objeto = objeto.replace(/\s+[a-záéíóúñ]*$/i, '');
             }
             
             return {
@@ -106,7 +141,6 @@ function extraerCaratula(texto) {
     
     return null;
 }
-
 // Función mejorada para extraer partes
 function extraerPartes(texto) {
     const partes = [];
