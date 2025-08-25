@@ -141,6 +141,7 @@ function extraerCaratula(texto) {
     
     return null;
 }
+
 // Función mejorada para extraer partes
 function extraerPartes(texto) {
     const partes = [];
@@ -226,8 +227,6 @@ function extraerArticulos(texto) {
 
 // Función mejorada para extraer la parte resolutiva completa
 function extraerResolucion(texto) {
-    console.log("Extrayendo resolución completa");
-    
     // Patrones para buscar el inicio y fin de la parte resolutiva
     const inicioPatrones = [
         /RESUELVO\s*:/gi,
@@ -261,7 +260,6 @@ function extraerResolucion(texto) {
     }
     
     if (inicioEncontrado === -1) {
-        console.log("No se encontró inicio de resolución");
         return null;
     }
     
@@ -278,7 +276,6 @@ function extraerResolucion(texto) {
     }
     
     if (finEncontrado === -1) {
-        console.log("No se encontró fin de resolución, usando todo el texto restante");
         // Si no se encuentra el fin, tomar hasta el final del documento o hasta una sección clara
         const proximaSeccion = textoDespuesDeInicio.search(/\n\n[A-Z][A-Z\s]+\n/);
         if (proximaSeccion !== -1) {
@@ -294,9 +291,29 @@ function extraerResolucion(texto) {
     // Limpiar el texto: quitar el "RESUELVO:" inicial y espacios extra
     textoResolutivo = textoResolutivo.replace(new RegExp("^" + patronInicioUsado, 'gi'), '').trim();
     
-    console.log("Resolución extraída, longitud:", textoResolutivo.length);
     return textoResolutivo;
 }
+
+function extraerFechas(texto) {
+    const fechas = [];
+    const fechaRegex = /(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+(\d{4})/gi;
+    const fechaRegex2 = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/g;
+    
+    let match;
+    while ((match = fechaRegex.exec(texto)) !== null) {
+        fechas.push(match[0]);
+    }
+    
+    while ((match = fechaRegex2.exec(texto)) !== null) {
+        const dia = match[1].padStart(2, '0');
+        const mes = match[2].padStart(2, '0');
+        const año = match[3].length === 2 ? '20' + match[3] : match[3];
+        fechas.push(`${dia}/${mes}/${año}`);
+    }
+    
+    return [...new Set(fechas)].slice(0, 5);
+}
+
 // Función mejorada para extraer montos
 function extraerMontos(texto) {
     const montos = [];
@@ -380,15 +397,21 @@ function extraerPalabrasClave(texto) {
     return palabrasClave.slice(0, 8);
 }
 
-// Reemplazar la sección de resolución en mostrarResultadoAnalisis
-    // Mostrar resolución si se detectó
-    if (analisis.resolucion) {
+function mostrarResultadoAnalisis(analisis) {
+    const resultadoDiv = document.getElementById('resultado');
+    
+    let html = `
+        <h2>Resultados del Análisis</h2>
+    `;
+    
+    // Mostrar carátula si se detectó
+    if (analisis.caratula) {
         html += `
-            <div class="seccion resolucion">
-                <h3>Parte Resolutiva Completa</h3>
-                <div class="resolucion-texto">
-                    ${analisis.resolucion.split('\n').map(linea => `<p>${linea}</p>`).join('')}
-                </div>
+            <div class="seccion caratula">
+                <h3>Carátula</h3>
+                <p><strong>Actor:</strong> ${analisis.caratula.actor}</p>
+                <p><strong>Demandado:</strong> ${analisis.caratula.demandado}</p>
+                <p><strong>Objeto:</strong> ${analisis.caratula.objeto}</p>
             </div>
         `;
     }
@@ -397,8 +420,10 @@ function extraerPalabrasClave(texto) {
     if (analisis.resolucion) {
         html += `
             <div class="seccion resolucion">
-                <h3>Resolución</h3>
-                <p>${analisis.resolucion}</p>
+                <h3>Parte Resolutiva Completa</h3>
+                <div class="resolucion-texto">
+                    ${analisis.resolucion.split('\n').map(linea => `<p>${linea}</p>`).join('')}
+                </div>
             </div>
         `;
     }
