@@ -1,59 +1,39 @@
 window.addEventListener('load', () => {
-    console.log("Analizador de Sentencias cargado");
-    
     if (typeof pdfjsLib === 'undefined') {
-        console.error("Error: PDF.js no está definido");
         document.getElementById('resultado').innerHTML = 
             '<p style="color: red;">Error: PDF.js no se cargó correctamente. Recarga la página.</p>';
         return;
     }
-    
-    console.log("PDF.js cargado correctamente");
-    
+
     const inputPdf = document.getElementById('input-pdf');
     const resultadoDiv = document.getElementById('resultado');
 
     inputPdf.addEventListener('change', async (event) => {
-        console.log("Evento change disparado");
         const archivo = event.target.files[0];
-        if (!archivo) {
-            console.log("No se seleccionó ningún archivo");
-            return;
-        }
-        
-        console.log("Archivo seleccionado:", archivo.name);
-        
+        if (!archivo) return;
+
         try {
             resultadoDiv.innerHTML = '<p>Procesando PDF...</p>';
-            console.log("Iniciando extracción de texto");
             const texto = await extraerTextoPDF(archivo);
-            console.log("Texto extraído, longitud:", texto.length);
             
             resultadoDiv.innerHTML = '<p>Analizando texto...</p>';
-            console.log("Iniciando análisis");
             const analisis = analizarSentencia(texto);
-            console.log("Análisis completado:", analisis);
             
-            mostrarResultadoAnalisis(analisis, texto);
+            mostrarResultadoAnalisis(analisis);
         } catch (error) {
-            console.error("Error durante el análisis:", error);
             resultadoDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
         }
     });
 });
 
 async function extraerTextoPDF(archivo) {
-    console.log("Iniciando extracción de texto del PDF");
     const url = URL.createObjectURL(archivo);
     
     try {
         const pdf = await pdfjsLib.getDocument(url).promise;
-        console.log("PDF cargado, número de páginas:", pdf.numPages);
-        
         let textoCompleto = '';
         
         for (let i = 1; i <= pdf.numPages; i++) {
-            console.log(`Procesando página ${i}`);
             const pagina = await pdf.getPage(i);
             const contenido = await pagina.getTextContent();
             const textoPagina = contenido.items
@@ -62,18 +42,13 @@ async function extraerTextoPDF(archivo) {
             textoCompleto += textoPagina + '\n';
         }
         
-        console.log("Extracción completada");
         return textoCompleto;
-    } catch (error) {
-        console.error("Error al extraer texto:", error);
-        throw error;
     } finally {
         URL.revokeObjectURL(url);
     }
 }
 
 function analizarSentencia(texto) {
-    console.log("Analizando sentencia");
     const resultado = {
         caratula: extraerCaratula(texto),
         partes: extraerPartes(texto),
@@ -84,13 +59,11 @@ function analizarSentencia(texto) {
         resolucion: extraerResolucion(texto)
     };
     
-    console.log("Análisis finalizado");
     return resultado;
 }
 
-// Función mejorada para extraer la carátula completa - recortar objeto en número o fecha
+// Función mejorada para extraer la carátula completa - recortar objeto en comillas, fecha, N° o número
 function extraerCaratula(texto) {
-    console.log("Extrayendo carátula");
     const patronesCaratula = [
         /([A-Z][a-záéíóúñ\s]+?)\s*[cC]\/*\s*([A-Z][a-záéíóúñ\s]+?)\s*[sS]\/*\s*(.+?)(?:\n|$)/i,
         /([A-Z][a-záéíóúñ\s]+?)\s+[cC]\s+([A-Z][a-záéíóúñ\s]+?)\s+[sS]\s+(.+?)(?:\n|$)/i,
@@ -100,11 +73,15 @@ function extraerCaratula(texto) {
     for (const patron of patronesCaratula) {
         const match = patron.exec(texto);
         if (match) {
-            console.log("Carátula encontrada");
             let objeto = match[3].trim();
             
-            // Recortar el objeto en el primer número o fecha
+            // Recortar el objeto en comillas, "Fecha del Escrito", "N°" o cualquier número
             const recortes = [
+                /"/, // Comillas
+                /Fecha del Escrito/i,
+                /N°/i,
+                /Nº/i,
+                /Nro\./i,
                 /\d+\/\d+\/\d+/, // Fecha DD/MM/AAAA
                 /\d+\s+de\s+[a-z]+\s+de\s+\d{4}/i, // Fecha "día de mes de año"
                 /\d{4}/, // Año solo
@@ -127,13 +104,11 @@ function extraerCaratula(texto) {
         }
     }
     
-    console.log("No se encontró carátula");
     return null;
 }
 
 // Función mejorada para extraer partes
 function extraerPartes(texto) {
-    console.log("Extrayendo partes");
     const partes = [];
     
     // 1. Extraer de la carátula
@@ -176,13 +151,11 @@ function extraerPartes(texto) {
         }
     });
     
-    console.log("Partes extraídas:", partes);
     return partes.slice(0, 5);
 }
 
 // Función mejorada para extraer artículos con cuerpo normativo y manejar abreviaturas
 function extraerArticulos(texto) {
-    console.log("Extrayendo artículos");
     const articulos = [];
     
     // Patrón mejorado para capturar artículo + cuerpo normativo, incluyendo abreviaturas
@@ -213,28 +186,23 @@ function extraerArticulos(texto) {
         }
     }
     
-    console.log("Artículos extraídos:", articulos);
     // Eliminar duplicados y ordenar
     return [...new Set(articulos)].sort().slice(0, 10);
 }
 
 // Función para extraer la resolución
 function extraerResolucion(texto) {
-    console.log("Extrayendo resolución");
     const resuelvoRegex = /RESUELVO:\s*(.+?)(?:\n\n|\n[A-Z]|$)/i;
     const match = resuelvoRegex.exec(texto);
     
     if (match) {
-        console.log("Resolución encontrada");
         return match[1].trim();
     }
     
-    console.log("No se encontró resolución");
     return null;
 }
 
 function extraerFechas(texto) {
-    console.log("Extrayendo fechas");
     const fechas = [];
     const fechaRegex = /(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+(\d{4})/gi;
     const fechaRegex2 = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/g;
@@ -251,13 +219,11 @@ function extraerFechas(texto) {
         fechas.push(`${dia}/${mes}/${año}`);
     }
     
-    console.log("Fechas extraídas:", fechas);
     return [...new Set(fechas)].slice(0, 5);
 }
 
 // Función mejorada para extraer montos
 function extraerMontos(texto) {
-    console.log("Extrayendo montos");
     const montos = [];
     
     // 1. Buscar montos en formato numérico completo
@@ -314,13 +280,11 @@ function extraerMontos(texto) {
         }
     }
     
-    console.log("Montos extraídos:", montos);
     // Eliminar duplicados y limitar a 5 resultados
     return [...new Set(montos)].slice(0, 5);
 }
 
 function extraerPalabrasClave(texto) {
-    console.log("Extrayendo palabras clave");
     const palabrasClave = [];
     const terminosJuridicos = [
         'indemnización', 'daño moral', 'despido injustificado', 'cuota alimentaria',
@@ -338,22 +302,14 @@ function extraerPalabrasClave(texto) {
         }
     });
     
-    console.log("Palabras clave extraídas:", palabrasClave);
     return palabrasClave.slice(0, 8);
 }
 
-function mostrarResultadoAnalisis(analisis, texto) {
-    console.log("Mostrando resultados");
+function mostrarResultadoAnalisis(analisis) {
     const resultadoDiv = document.getElementById('resultado');
     
     let html = `
         <h2>Resultados del Análisis</h2>
-        
-        <!-- Sección de depuración -->
-        <div class="seccion depuracion">
-            <h3>Depuración - Primeras 500 caracteres del texto extraído</h3>
-            <pre>${texto.substring(0, 500)}...</pre>
-        </div>
     `;
     
     // Mostrar carátula si se detectó
@@ -386,21 +342,21 @@ function mostrarResultadoAnalisis(analisis, texto) {
             </ul>
         </div>
         
-        <div class="seccion">
+        <div class="seccion articulos">
             <h3>Artículos Citados</h3>
             <ul>
                 ${analisis.articulos.map(a => `<li>${a}</li>`).join('') || '<li>No se detectaron artículos</li>'}
             </ul>
         </div>
         
-        <div class="seccion">
+        <div class="seccion fechas">
             <h3>Fechas Importantes</h3>
             <ul>
                 ${analisis.fechas.map(f => `<li>${f}</li>`).join('') || '<li>No se detectaron fechas</li>'}
             </ul>
         </div>
         
-        <div class="seccion">
+        <div class="seccion montos">
             <h3>Montos Económicos</h3>
             <ul>
                 ${analisis.montos.map(m => `<li>${m}</li>`).join('') || '<li>No se detectaron montos</li>'}
@@ -416,5 +372,4 @@ function mostrarResultadoAnalisis(analisis, texto) {
     `;
     
     resultadoDiv.innerHTML = html;
-    console.log("Resultados mostrados");
 }
